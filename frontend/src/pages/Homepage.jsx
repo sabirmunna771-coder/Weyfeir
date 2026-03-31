@@ -26,12 +26,15 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [liveProducts, setLiveProducts] = useState([]);
 
+  // Use environment variable for the API base URL, fallback to localhost for local testing
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
   useEffect(() => {
-    fetch('http://localhost:5000/api/products/all')
+    fetch(`${API_BASE_URL}/api/products/all`)
       .then(res => res.json())
       .then(data => setLiveProducts(data))
       .catch(err => console.error(err));
-  }, []);
+  }, [API_BASE_URL]);
 
   const handleStartChat = (product) => {
     const isLogged = localStorage.getItem('isCustomerLoggedIn');
@@ -41,7 +44,7 @@ const HomePage = () => {
       return;
     }
     
-    // NEW: We pass the entire product context to local storage
+    // Pass the entire product context to local storage
     localStorage.setItem('pendingChatSeller', JSON.stringify({ 
       id: product.seller_id, 
       shopName: product.shopName,

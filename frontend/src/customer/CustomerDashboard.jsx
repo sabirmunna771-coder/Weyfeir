@@ -10,6 +10,9 @@ const CustomerDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const navigate = useNavigate();
   
+  // Use environment variable for the API base URL, fallback to localhost for local testing
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+  
   // Profile State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [userData, setUserData] = useState({ id: null, fullName: 'Loading...', email: 'Loading...', phoneNumber: '', initial: '' });
@@ -49,7 +52,7 @@ const CustomerDashboard = () => {
         setActiveChatSeller({ id: seller.id, shopName: seller.shopName });
         fetchMessages(parsedUser.id, seller.id);
         
-        // NEW: If we passed a product from the home page, pre-fill the chat!
+        // If we passed a product from the home page, pre-fill the chat!
         if (seller.productContext) {
           setChatMessage(`Hi, I am interested in this product: ${seller.productContext.title} ($${seller.productContext.price})`);
           setAttachedImageUrl(seller.productContext.image_url);
@@ -68,14 +71,14 @@ const CustomerDashboard = () => {
   // --- CHAT API CALLS ---
   const fetchContacts = async (custId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/chat/customer/${custId}/contacts`);
+      const res = await fetch(`${API_BASE_URL}/api/chat/customer/${custId}/contacts`);
       if (res.ok) setChatContacts(await res.json());
     } catch (e) { console.error(e); }
   };
 
   const fetchMessages = async (custId, sellerId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/chat/${custId}/${sellerId}`);
+      const res = await fetch(`${API_BASE_URL}/api/chat/${custId}/${sellerId}`);
       if (res.ok) setMessages(await res.json());
     } catch (e) { console.error(e); }
   };
@@ -93,7 +96,7 @@ const CustomerDashboard = () => {
       if (chatImageFile) formData.append('chatImage', chatImageFile);
       if (attachedImageUrl) formData.append('existing_image_url', attachedImageUrl); // Pass the product image URL!
 
-      await fetch('http://localhost:5000/api/chat', {
+      await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         body: formData 
       });
@@ -109,7 +112,7 @@ const CustomerDashboard = () => {
   // --- PROFILE API CALLS ---
   const handleUpdateProfile = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/customer/profile/${userData.id}`, { 
+      const res = await fetch(`${API_BASE_URL}/api/customer/profile/${userData.id}`, { 
         method: 'PUT', 
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify(profileForm) 

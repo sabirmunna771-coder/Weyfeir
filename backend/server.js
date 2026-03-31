@@ -5,6 +5,9 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+// Load environment variables (Required for live deployment)
+require('dotenv').config();
+
 const app = express();
 
 app.use(cors()); 
@@ -28,16 +31,17 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // --- DATABASE CONNECTION ---
+// Uses live environment variables, falls back to XAMPP for local dev
 const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',      
-  password: '',      
-  database: 'weyfeir_store'
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',      
+  password: process.env.DB_PASSWORD || '',      
+  database: process.env.DB_NAME || 'weyfeir_store'
 });
 
 pool.getConnection()
-  .then(() => console.log('✅ Connected to MySQL (XAMPP) Successfully!'))
-  .catch((err) => console.error('❌ MySQL Error:', err));
+  .then(() => console.log('✅ Connected to MySQL Database Successfully!'))
+  .catch((err) => console.error('❌ MySQL Connection Error:', err));
 
 
 // --- 1. AUTHENTICATION ROUTES ---
@@ -103,8 +107,11 @@ app.get('/api/seller/products/:sellerId', async (req, res) => {
 app.post('/api/seller/products', upload.single('productImage'), async (req, res) => {
   try {
     const { seller_id, title, category, price, stock_qty, description, profit } = req.body;
+    
+    // Dynamic Image URL using environment variable
+    const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
     const image_url = req.file 
-      ? `http://localhost:5000/uploads/${req.file.filename}` 
+      ? `${baseUrl}/uploads/${req.file.filename}` 
       : "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80";
 
     const query = `INSERT INTO products (seller_id, title, category, price, stock_qty, description, profit, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -149,9 +156,10 @@ app.post('/api/chat', upload.single('chatImage'), async (req, res) => {
   try {
     const { customer_id, seller_id, sender, message, existing_image_url } = req.body;
     
-    // NEW: If a product image URL was passed from the frontend, use it. Otherwise use the uploaded file.
+    // Dynamic Image URL using environment variable
+    const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
     const image_url = req.file 
-      ? `http://localhost:5000/uploads/${req.file.filename}` 
+      ? `${baseUrl}/uploads/${req.file.filename}` 
       : (existing_image_url || null);
     
     await pool.execute(
@@ -186,7 +194,8 @@ app.get('/api/chat/seller/:id/contacts', async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Server Error' }); }
 });
 
-const PORT = 5000;
+// Dynamic Port for Live Server
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });

@@ -8,10 +8,12 @@ const SellerRegistration = () => {
   const [idImages, setIdImages] = useState({ front: null, back: null });
   const navigate = useNavigate();
 
+  // Use environment variable for the API base URL, fallback to localhost for local testing
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   const handleFileChange = (e, side) => setIdImages({ ...idImages, [side]: e.target.files[0] });
   
-  // UPDATED: Now connects to your Node.js/MySQL Backend
   const handleRegister = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
@@ -19,7 +21,7 @@ const SellerRegistration = () => {
     }
     
     try {
-      const response = await fetch('http://localhost:5000/api/register/seller', {
+      const response = await fetch(`${API_BASE_URL}/api/register/seller`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         // We are sending text data first. File uploading requires advanced backend setup (multer) which we can add later!

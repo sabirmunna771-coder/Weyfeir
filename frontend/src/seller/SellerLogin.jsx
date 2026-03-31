@@ -9,11 +9,14 @@ const SellerLogin = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
+  // Use environment variable for the API base URL, fallback to localhost for local testing
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
   const handleLogin = async (e) => {
     e.preventDefault();
     
     try {
-      const response = await fetch('http://localhost:5000/api/login/seller', {
+      const response = await fetch(`${API_BASE_URL}/api/login/seller`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

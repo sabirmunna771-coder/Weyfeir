@@ -11,6 +11,9 @@ const SellerDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   
+  // Use environment variable for the API base URL, fallback to localhost for local testing
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
   // Edit & Modal States
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingShop, setIsEditingShop] = useState(false);
@@ -79,7 +82,7 @@ const SellerDashboard = () => {
   // --- API CALLS ---
   const fetchProducts = async (sellerId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/seller/products/${sellerId}`);
+      const response = await fetch(`${API_BASE_URL}/api/seller/products/${sellerId}`);
       const data = await response.json();
       if (response.ok) setProducts(data);
     } catch (error) { console.error('Error fetching products:', error); }
@@ -98,7 +101,7 @@ const SellerDashboard = () => {
       formData.append('profit', calculatedProfit);
       if (productImageFile) formData.append('productImage', productImageFile);
 
-      const response = await fetch('http://localhost:5000/api/seller/products', { method: 'POST', body: formData });
+      const response = await fetch(`${API_BASE_URL}/api/seller/products`, { method: 'POST', body: formData });
 
       if (response.ok) {
         alert('✅ Product Added Successfully!');
@@ -116,7 +119,7 @@ const SellerDashboard = () => {
 
   const handleUpdateProfile = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/seller/profile/${sellerData.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/seller/profile/${sellerData.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profileForm)
@@ -133,7 +136,7 @@ const SellerDashboard = () => {
 
   const handleUpdateShop = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/seller/shop/${sellerData.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/seller/shop/${sellerData.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(shopForm)
@@ -151,14 +154,14 @@ const SellerDashboard = () => {
   // --- CHAT API CALLS ---
   const fetchContacts = async (sellerId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/chat/seller/${sellerId}/contacts`);
+      const res = await fetch(`${API_BASE_URL}/api/chat/seller/${sellerId}/contacts`);
       if (res.ok) setChatContacts(await res.json());
     } catch (e) { console.error(e); }
   };
 
   const fetchMessages = async (sellerId, custId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/chat/${custId}/${sellerId}`);
+      const res = await fetch(`${API_BASE_URL}/api/chat/${custId}/${sellerId}`);
       if (res.ok) setMessages(await res.json());
     } catch (e) { console.error(e); }
   };
@@ -175,7 +178,7 @@ const SellerDashboard = () => {
       formData.append('message', chatMessage);
       if (chatImageFile) formData.append('chatImage', chatImageFile);
 
-      await fetch('http://localhost:5000/api/chat', {
+      await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         body: formData
       });
@@ -329,7 +332,7 @@ const SellerDashboard = () => {
                 messages.map(msg => (
                   <div key={msg.id} style={{ alignSelf: msg.sender === 'seller' ? 'flex-end' : 'flex-start', display: 'flex', gap: '10px' }}>
                     <div style={{ backgroundColor: msg.sender === 'seller' ? '#1e88e5' : 'white', color: msg.sender === 'seller' ? 'white' : '#333', padding: '10px 15px', borderRadius: msg.sender === 'seller' ? '15px 15px 0 15px' : '15px 15px 15px 0', fontSize: '13px', border: msg.sender === 'seller' ? 'none' : '1px solid #ddd', maxWidth: '400px', lineHeight: '1.4' }}>
-                      {/* NEW: Displays both text and attached image */}
+                      {/* Displays both text and attached image */}
                       {msg.message && <div>{msg.message}</div>}
                       {msg.image_url && <img src={msg.image_url} alt="attachment" style={{ maxWidth: '100%', borderRadius: '4px', marginTop: msg.message ? '10px' : '0' }} />}
                     </div>
@@ -341,13 +344,13 @@ const SellerDashboard = () => {
 
             <div style={{ padding: '15px', backgroundColor: 'white', borderTop: '1px solid #eee', display: 'flex', gap: '10px', alignItems: 'center' }}>
               
-              {/* NEW: Image Upload Input and Button */}
+              {/* Image Upload Input and Button */}
               <input type="file" accept="image/*" ref={chatFileInputRef} onChange={(e) => setChatImageFile(e.target.files[0])} style={{ display: 'none' }} />
               <button onClick={() => chatFileInputRef.current.click()} style={{ backgroundColor: chatImageFile ? '#e3f2fd' : 'transparent', border: 'none', cursor: 'pointer', color: chatImageFile ? '#1e88e5' : '#888', borderRadius: '50%', padding: '5px' }}>
                 <ImageIcon size={24} />
               </button>
               
-              {/* NEW: Display selected filename */}
+              {/* Display selected filename */}
               {chatImageFile && <span style={{fontSize:'11px', color:'#1e88e5', maxWidth:'50px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{chatImageFile.name}</span>}
               
               <input type="text" placeholder="Reply to customer..." value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} style={{ flex: 1, padding: '12px 15px', border: '1px solid #ddd', borderRadius: '25px', outline: 'none', fontSize: '14px' }} />

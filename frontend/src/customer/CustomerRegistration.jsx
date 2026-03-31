@@ -7,13 +7,16 @@ const CustomerRegistration = () => {
   const [formData, setFormData] = useState({ fullName: '', email: '', phoneNumber: '', password: '' });
   const navigate = useNavigate();
 
+  // Use environment variable for the API base URL, fallback to localhost for local testing
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleRegister = async (e) => { 
     e.preventDefault(); 
     
     try {
-      const response = await fetch('http://localhost:5000/api/register/customer', {
+      const response = await fetch(`${API_BASE_URL}/api/register/customer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
