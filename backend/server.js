@@ -10,6 +10,7 @@ require('dotenv').config();
 
 const app = express();
 
+// Allow cross-origin requests from your live React frontend
 app.use(cors()); 
 app.use(express.json()); 
 
@@ -36,7 +37,10 @@ const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',      
   password: process.env.DB_PASSWORD || '',      
-  database: process.env.DB_NAME || 'weyfeir_store'
+  database: process.env.DB_NAME || 'weyfeir_store',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
 pool.getConnection()
